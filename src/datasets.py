@@ -78,6 +78,7 @@ class Filter:
     def __call__(self, X):
         b, a = self.butter_bandpass()
         X_filtered = filtfilt(b, a, X.numpy(), axis=-1)
+        X_filtered = np.ascontiguousarray(X_filtered)
         return torch.from_numpy(X_filtered).float()
 
 class BaselineCorrection:
