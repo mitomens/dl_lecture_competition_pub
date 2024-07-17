@@ -89,7 +89,7 @@ def run(args: DictConfig):
             total_loss = loss + args.alpha * l2_norm
             train_loss.append(total_loss.item())
             
-            train_loss.append(loss.item())
+            #train_loss.append(loss.item())
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
