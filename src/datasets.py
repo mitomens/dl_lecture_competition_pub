@@ -133,8 +133,9 @@ def set_lr(lr, optimizer):
 class StandardScalerSubset(torch.utils.data.Dataset):
     def __init__(self, dataset, indices,
                  mean=None, std=None, eps=10**-9):
-        super().__init__(dataset=dataset, indices=indices)
-        target_tensor = torch.stack([dataset[i][0] for i in indices])
+        self.dataset = dataset
+        self.indices = indices
+        target_tensor = torch.stack([self.dataset[i][0] for i in self.indices])
         target_tensor = target_tensor.to(torch.float64)
         if mean is None:
             self._mean = torch.mean(target_tensor, dim=0)
