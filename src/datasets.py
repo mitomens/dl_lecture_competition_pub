@@ -7,7 +7,7 @@ from glob import glob
 
 
 class ThingsMEGDataset(torch.utils.data.Dataset):
-    def __init__(self, split: str, data_dir: str = "data") -> None:
+    def __init__(self, split: str, data_dir: str = "data", preprocess=None) -> None:
         super().__init__()
         assert split in ["train", "val", "test"], f"Invalid split: {split}"
         
@@ -29,11 +29,18 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
         if self.split in ["train", "val"]:
             y_path = os.path.join(self.data_dir, f"{self.split}_y", str(i).zfill(5) + ".npy")
             y = torch.from_numpy(np.load(y_path))
+
+            if self.preprocess:
+                for p in self.preprocess:
+                    X = p(X)
             
             return X, y, subject_idx
         else:
+            if self.preprocess:
+                for p in self.preprocess:
+                    X = p(X)
             return X, subject_idx
-        
+
     @property
     def num_channels(self) -> int:
         return np.load(os.path.join(self.data_dir, f"{self.split}_X", "00000.npy")).shape[0]
@@ -41,3 +48,4 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
     @property
     def seq_len(self) -> int:
         return np.load(os.path.join(self.data_dir, f"{self.split}_X", "00000.npy")).shape[1]
+

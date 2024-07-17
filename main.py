@@ -8,10 +8,13 @@ from omegaconf import DictConfig
 import wandb
 from termcolor import cprint
 from tqdm import tqdm
+from torchvision import transforms
 
 from src.datasets import ThingsMEGDataset
 from src.models import BasicConvClassifier
 from src.utils import set_seed
+from src.preprocess import Resample, Filter, BaselineCorrection, Scaling
+
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
@@ -26,12 +29,19 @@ def run(args: DictConfig):
     #    Dataloader
     # ------------------
     loader_args = {"batch_size": args.batch_size, "num_workers": args.num_workers}
+
+    preprocess = [
+        Resample(new_rate=128),  # リサンプリング
+        Filter(lowcut=0.5, highcut=30, fs=128),  # フィルタリング
+        BaselineCorrection(),  # ベースライン補正
+        Scaling()  # スケーリング
+    ]
     
-    train_set = ThingsMEGDataset("train", args.data_dir)
+    train_set = ThingsMEGDataset("train", args.data_dir, preprocess=preprocess)
     train_loader = torch.utils.data.DataLoader(train_set, shuffle=True, **loader_args)
-    val_set = ThingsMEGDataset("val", args.data_dir)
+    val_set = ThingsMEGDataset("val", args.data_dir, preprocess=preprocess)
     val_loader = torch.utils.data.DataLoader(val_set, shuffle=False, **loader_args)
-    test_set = ThingsMEGDataset("test", args.data_dir)
+    test_set = ThingsMEGDataset("test", args.data_dir, preprocess=preprocess)
     test_loader = torch.utils.data.DataLoader(
         test_set, shuffle=False, batch_size=args.batch_size, num_workers=args.num_workers
     )
@@ -68,7 +78,14 @@ def run(args: DictConfig):
             y_pred = model(X)
             
             loss = F.cross_entropy(y_pred, y)
-            train_loss.append(loss.item())
+            # L2正則化の計算
+            l2_norm = torch.tensor(0., requires_grad=True).to(args.device)
+            for w in model.parameters():
+                l2_norm = l2_norm + torch.norm(w) ** 2
+        
+            # 合計損失の計算
+            total_loss = loss + args.alpha * l2_norm
+            train_loss.append(total_loss.item())
             
             optimizer.zero_grad()
             loss.backward()
