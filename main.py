@@ -12,6 +12,7 @@ from tqdm import tqdm
 from src.datasets import ThingsMEGDataset
 from src.datasets import Scheduler
 from src.datasets import set_lr
+from src.datasets import StandardScalerSubset
 from src.models import BasicConvClassifier
 from src.utils import set_seed
 
@@ -45,6 +46,21 @@ def run(args: DictConfig):
     val_set = ThingsMEGDataset("val", args.data_dir)
     val_loader = torch.utils.data.DataLoader(val_set, shuffle=False, **loader_args)
     test_set = ThingsMEGDataset("test", args.data_dir)
+    test_loader = torch.utils.data.DataLoader(
+        test_set, shuffle=False, batch_size=args.batch_size, num_workers=args.num_workers
+    )
+
+    # トレーニングデータの全てのインデックスを取得
+    train_indices = list(range(len(train_set)))
+
+    # 正規化クラスを適用
+    scaler = StandardScalerSubset(train_dataset, train_indices)
+    train_dataset = StandardScalerSubset(train_dataset, train_indices, scaler.mean, scaler.std)
+    val_dataset = StandardScalerSubset(val_dataset, list(range(len(val_dataset))), scaler.mean, scaler.std)
+    test_dataset = StandardScalerSubset(test_dataset, list(range(len(test_dataset))), scaler.mean, scaler.std)
+
+    train_loader = torch.utils.data.DataLoader(train_set, shuffle=True, **loader_args)
+    val_loader = torch.utils.data.DataLoader(val_set, shuffle=False, **loader_args)
     test_loader = torch.utils.data.DataLoader(
         test_set, shuffle=False, batch_size=args.batch_size, num_workers=args.num_workers
     )
