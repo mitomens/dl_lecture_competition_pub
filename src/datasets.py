@@ -90,8 +90,15 @@ class BaselineCorrection:
         baseline = X.mean(dim=-1, keepdim=True)
         X_corrected = X - baseline
         return X_corrected
-
-class Scaling:
-    def __call__(self, X):
-        return (X - X.mean()) / X.std()
 """
+class Scaling:
+    def __call__(self, n, axis=None, ddof=0):
+        # 平均値を計算
+        mean_n = n.mean(axis = axis , keepdims = True)
+        # 標準偏差を計算。ddofが0ならば標準偏差、ddofが1ならば不標準偏差
+        # keepdims:配列の次元数を落とさずに結果を求めるための引数
+        std_n = n.std(axis = axis , keepdims = True, ddof = ddof)
+        # 標準化の計算
+        standard_n = (n - mean_n) / std_n
+    
+        return standard_n

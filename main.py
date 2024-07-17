@@ -10,6 +10,7 @@ from termcolor import cprint
 from tqdm import tqdm
 
 from src.datasets import ThingsMEGDataset
+from src.datasets import Scaling
 from src.models import BasicConvClassifier
 from src.utils import set_seed
 
@@ -27,20 +28,20 @@ def run(args: DictConfig):
     #    Dataloader
     # ------------------
     loader_args = {"batch_size": args.batch_size, "num_workers": args.num_workers}
-    """
+    
     preprocess = [
         #Resample(new_rate=128),  # リサンプリング
         #Filter(lowcut=0.5, highcut=30, fs=128),  # フィルタリング
         #BaselineCorrection(),  # ベースライン補正
-        #Scaling()  # スケーリング
+        Scaling()  # スケーリング
     ]
-    """
     
-    train_set = ThingsMEGDataset("train", args.data_dir)
+    
+    train_set = ThingsMEGDataset("train", args.data_dir, preprocess=preprocess)
     train_loader = torch.utils.data.DataLoader(train_set, shuffle=True, **loader_args)
-    val_set = ThingsMEGDataset("val", args.data_dir)
+    val_set = ThingsMEGDataset("val", args.data_dir, preprocess=preprocess)
     val_loader = torch.utils.data.DataLoader(val_set, shuffle=False, **loader_args)
-    test_set = ThingsMEGDataset("test", args.data_dir)
+    test_set = ThingsMEGDataset("test", args.data_dir, preprocess=preprocess)
     test_loader = torch.utils.data.DataLoader(
         test_set, shuffle=False, batch_size=args.batch_size, num_workers=args.num_workers
     )
