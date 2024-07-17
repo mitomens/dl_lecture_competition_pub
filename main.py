@@ -10,6 +10,8 @@ from termcolor import cprint
 from tqdm import tqdm
 
 from src.datasets import ThingsMEGDataset
+from src.datasets import Scheduler
+from src.datasets import set_lr
 from src.models import BasicConvClassifier
 from src.utils import set_seed
 
@@ -66,9 +68,14 @@ def run(args: DictConfig):
     accuracy = Accuracy(
         task="multiclass", num_classes=train_set.num_classes, top_k=10
     ).to(args.device)
+
+    scheduler = Scheduler(args.epochs, args.lr)
       
     for epoch in range(args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
+        # スケジューラで学習率を更新する
+        new_lr = scheduler(epoch)
+        set_lr(new_lr, optimizer)
         
         train_loss, train_acc, val_loss, val_acc = [], [], [], []
         
