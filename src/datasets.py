@@ -57,6 +57,7 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
     def seq_len(self) -> int:
         return np.load(os.path.join(self.data_dir, f"{self.split}_X", "00000.npy")).shape[1]
 
+"""
 class Resample:
     def __init__(self, new_rate):
         self.new_rate = new_rate
@@ -94,3 +95,4 @@ class BaselineCorrection:
 class Scaling:
     def __call__(self, X):
         return (X - X.mean()) / X.std()
+"""
