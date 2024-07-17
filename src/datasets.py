@@ -33,19 +33,15 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
             y_path = os.path.join(self.data_dir, f"{self.split}_y", str(i).zfill(5) + ".npy")
             y = torch.from_numpy(np.load(y_path))
 
-            """
             if self.preprocess:
                 for p in self.preprocess:
                     X = p(X)
-            """
             
             return X, y, subject_idx
         else:
-            """
             if self.preprocess:
                 for p in self.preprocess:
                     X = p(X)
-            """
             return X, subject_idx
 
     @property
