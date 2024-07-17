@@ -29,19 +29,21 @@ def run(args: DictConfig):
     # ------------------
     loader_args = {"batch_size": args.batch_size, "num_workers": args.num_workers}
     
+    """
     preprocess = [
         #Resample(new_rate=128),  # リサンプリング
         #Filter(lowcut=0.5, highcut=30, fs=128),  # フィルタリング
         #BaselineCorrection(),  # ベースライン補正
         Scaling()  # スケーリング
     ]
+    """
     
     
-    train_set = ThingsMEGDataset("train", args.data_dir, preprocess=preprocess)
+    train_set = ThingsMEGDataset("train", args.data_dir)
     train_loader = torch.utils.data.DataLoader(train_set, shuffle=True, **loader_args)
-    val_set = ThingsMEGDataset("val", args.data_dir, preprocess=preprocess)
+    val_set = ThingsMEGDataset("val", args.data_dir)
     val_loader = torch.utils.data.DataLoader(val_set, shuffle=False, **loader_args)
-    test_set = ThingsMEGDataset("test", args.data_dir, preprocess=preprocess)
+    test_set = ThingsMEGDataset("test", args.data_dir)
     test_loader = torch.utils.data.DataLoader(
         test_set, shuffle=False, batch_size=args.batch_size, num_workers=args.num_workers
     )
@@ -78,7 +80,7 @@ def run(args: DictConfig):
             y_pred = model(X)
             
             loss = F.cross_entropy(y_pred, y)
-            """
+            
             # L2正則化の計算
             l2_norm = torch.tensor(0., requires_grad=True).to(args.device)
             for w in model.parameters():
@@ -87,7 +89,7 @@ def run(args: DictConfig):
             # 合計損失の計算
             total_loss = loss + args.alpha * l2_norm
             train_loss.append(total_loss.item())
-            """
+            
             train_loss.append(loss.item())
             optimizer.zero_grad()
             loss.backward()

@@ -33,15 +33,19 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
             y_path = os.path.join(self.data_dir, f"{self.split}_y", str(i).zfill(5) + ".npy")
             y = torch.from_numpy(np.load(y_path))
 
+            """
             if self.preprocess:
                 for p in self.preprocess:
                     X = p(X)
+            """
             
             return X, y, subject_idx
         else:
+            """
             if self.preprocess:
                 for p in self.preprocess:
                     X = p(X)
+            """
             return X, subject_idx
 
     @property
@@ -87,14 +91,16 @@ class BaselineCorrection:
         X_corrected = X - baseline
         return X_corrected
 """
+"""
 class Scaling:
     def __call__(self, n, axis=None, ddof=0):
         # 平均値を計算
-        mean_n = np.mean(n, axis = axis, keepdims = True)
+        mean_n = torch.mean(n, axis = axis, keepdims = True)
         # 標準偏差を計算。ddofが0ならば標準偏差、ddofが1ならば不標準偏差
         # keepdims:配列の次元数を落とさずに結果を求めるための引数
-        std_n = np.std(n, axis = axis, keepdims = True, ddof = ddof)
+        std_n = torch.std(n, axis = axis, keepdims = True, ddof = ddof)
         # 標準化の計算
         standard_n = (n - mean_n) / std_n
     
         return standard_n
+"""
