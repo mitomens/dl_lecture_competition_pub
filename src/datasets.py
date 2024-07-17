@@ -16,6 +16,7 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
         
         self.split = split
         self.data_dir = data_dir
+        self.preprocess = preprocess
         self.num_classes = 1854
         self.num_samples = len(glob(os.path.join(data_dir, f"{split}_X", "*.npy")))
 
