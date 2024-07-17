@@ -32,7 +32,7 @@ def run(args: DictConfig):
 
     preprocess = [
         #Resample(new_rate=128),  # リサンプリング
-        Filter(lowcut=0.5, highcut=30, fs=128),  # フィルタリング
+        #Filter(lowcut=0.5, highcut=30, fs=128),  # フィルタリング
         BaselineCorrection(),  # ベースライン補正
         Scaling()  # スケーリング
     ]
