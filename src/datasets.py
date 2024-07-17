@@ -6,7 +6,6 @@ from termcolor import cprint
 from glob import glob
 
 import torch
-from scipy.signal import resample, butter, filtfilt
 
 
 class ThingsMEGDataset(torch.utils.data.Dataset):

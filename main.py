@@ -8,12 +8,10 @@ from omegaconf import DictConfig
 import wandb
 from termcolor import cprint
 from tqdm import tqdm
-from torchvision import transforms
 
 from src.datasets import ThingsMEGDataset
 from src.models import BasicConvClassifier
 from src.utils import set_seed
-from src.datasets import Resample, Filter, BaselineCorrection, Scaling
 
 
 
