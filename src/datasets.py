@@ -5,6 +5,9 @@ from typing import Tuple
 from termcolor import cprint
 from glob import glob
 
+import torch
+from scipy.signal import resample, butter, filtfilt
+
 
 class ThingsMEGDataset(torch.utils.data.Dataset):
     def __init__(self, split: str, data_dir: str = "data", preprocess=None) -> None:
@@ -49,3 +52,39 @@ class ThingsMEGDataset(torch.utils.data.Dataset):
     def seq_len(self) -> int:
         return np.load(os.path.join(self.data_dir, f"{self.split}_X", "00000.npy")).shape[1]
 
+class Resample:
+    def __init__(self, new_rate):
+        self.new_rate = new_rate
+
+    def __call__(self, X):
+        X_resampled = resample(X, self.new_rate, axis=-1)
+        return torch.from_numpy(X_resampled).float()
+
+class Filter:
+    def __init__(self, lowcut, highcut, fs, order=5):
+        self.lowcut = lowcut
+        self.highcut = highcut
+        self.fs = fs
+        self.order = order
+
+    def butter_bandpass(self):
+        nyquist = 0.5 * self.fs
+        low = self.lowcut / nyquist
+        high = self.highcut / nyquist
+        b, a = butter(self.order, [low, high], btype='band')
+        return b, a
+
+    def __call__(self, X):
+        b, a = self.butter_bandpass()
+        X_filtered = filtfilt(b, a, X.numpy(), axis=-1)
+        return torch.from_numpy(X_filtered).float()
+
+class BaselineCorrection:
+    def __call__(self, X):
+        baseline = X.mean(dim=-1, keepdim=True)
+        X_corrected = X - baseline
+        return X_corrected
+
+class Scaling:
+    def __call__(self, X):
+        return (X - X.mean()) / X.std()

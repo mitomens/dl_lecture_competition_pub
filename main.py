@@ -13,7 +13,7 @@ from torchvision import transforms
 from src.datasets import ThingsMEGDataset
 from src.models import BasicConvClassifier
 from src.utils import set_seed
-from src.preprocess import Resample, Filter, BaselineCorrection, Scaling
+from src.datasets import Resample, Filter, BaselineCorrection, Scaling
 
 
 
