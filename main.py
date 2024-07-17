@@ -31,7 +31,7 @@ def run(args: DictConfig):
     loader_args = {"batch_size": args.batch_size, "num_workers": args.num_workers}
 
     preprocess = [
-        Resample(new_rate=128),  # リサンプリング
+        #Resample(new_rate=128),  # リサンプリング
         Filter(lowcut=0.5, highcut=30, fs=128),  # フィルタリング
         BaselineCorrection(),  # ベースライン補正
         Scaling()  # スケーリング
