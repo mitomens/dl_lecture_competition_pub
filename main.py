@@ -131,7 +131,8 @@ class VQADataset(torch.utils.data.Dataset):
         image = Image.open(f"{self.image_dir}/{self.df['image'][idx]}")
         image = self.transform(image)
         question = np.zeros(len(self.idx2question) + 1)  # 未知語用の要素を追加
-        question_words = self.df["question"][idx].split(" ")
+        #question_words = self.df["question"][idx].split(" ")
+        question_words = process_text(self.df["question"][idx]).split(" ")
         for word in question_words:
             try:
                 question[self.question2idx[word]] = 1  # one-hot表現に変換
@@ -363,13 +364,31 @@ def main():
     set_seed(42)
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
+    class gcn():
+        def __init__(self):
+            pass
+
+        def __call__(self, x):
+            mean = torch.mean(x)
+            std = torch.std(x)
+            return (x - mean)/(std + 10**(-6))  # 0除算を防ぐ
+    
     # dataloader / model
-    transform = transforms.Compose([
+    transform_train = transforms.Compose([
         transforms.Resize((224, 224)),
-        transforms.ToTensor()
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        gcn(),
     ])
-    train_dataset = VQADataset(df_path="./data/train.json", image_dir="./data/train", transform=transform)
-    test_dataset = VQADataset(df_path="./data/valid.json", image_dir="./data/valid", transform=transform, answer=False)
+
+    transform_test = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        gcn(),
+    ])
+
+    train_dataset = VQADataset(df_path="./data/train.json", image_dir="./data/train", transform=transform_train)
+    test_dataset = VQADataset(df_path="./data/valid.json", image_dir="./data/valid", transform=transform_test, answer=False)
     test_dataset.update_dict(train_dataset)
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=128, shuffle=True)
@@ -378,7 +397,7 @@ def main():
     model = VQAModel(vocab_size=len(train_dataset.question2idx)+1, n_answer=len(train_dataset.answer2idx)).to(device)
 
     # optimizer / criterion
-    num_epoch = 20
+    num_epoch = 5
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
 
