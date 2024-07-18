@@ -76,13 +76,15 @@ def run(args: DictConfig):
             
             loss = F.cross_entropy(y_pred, y)
 
+            """
             # L2正則化の計算
             l2_norm = sum(torch.norm(p) ** 2 for p in model.parameters())
         
             # 合計損失の計算
             total_loss = loss + args.alpha * l2_norm
             train_loss.append(total_loss.item())
-            #train_loss.append(loss.item())
+            """
+            train_loss.append(loss.item())
 
             optimizer.zero_grad()
             loss.backward()
